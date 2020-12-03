@@ -5,21 +5,13 @@
 
 import subprocess
 
-class HwBrightnessControl:
-    #get current brightness
-    def _get_br():
-        return float(subprocess.run(["xbacklight", "-get"], capture_output=True, text=True).stdout[:-1])
+import hw_brightness_control as hw_control
+import timeManager
 
-    #set new brightness
-    def _set_br(new_br):
-        subprocess.run(["xbacklight", "-set", str(new_br)])
+t = TimeManager()
 
-    #add or subtract from current brightness
-    def _change_br(add):
-        current = _get_br()
-        _set_br(current+add)
+def set_br():
+    hw_control.set_br(t.get_current_br)
 
-    #_change_br(10)
-    #_change_br(-10)
-
-t = TimeManager
+if __name__ == "__main__":
+    set_br()
