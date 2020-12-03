@@ -3,15 +3,13 @@
 # depending on current time
 # author: jogme
 
-import subprocess
-
-import hw_brightness_control as hw_control
-import timeManager
+from hw_brightness_control import HwBrightnessControl
+from timeManager import TimeManager
 
 t = TimeManager()
 
 def set_br():
-    hw_control.set_br(t.get_current_br)
+    HwBrightnessControl.set_br(t.get_current_br())
 
 if __name__ == "__main__":
     set_br()
