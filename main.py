@@ -12,9 +12,10 @@ import config
 t = TimeManager()
 
 def set_br():
+    HwBrightnessControl.set_first_br(t.get_current_br())
     while True:
         HwBrightnessControl.set_br(t.get_current_br())
-        sleep(config.sleep_time_s)
+        sleep(10)#config.sleep_time_s)
 
 if __name__ == "__main__":
     set_br()

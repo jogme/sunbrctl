@@ -13,12 +13,21 @@ class HwBrightnessControl:
             new_br = config.min_br
         if new_br > config.max_br:
             new_br = config.max_br
+        if abs(int(HwBrightnessControl.get_br())-new_br) < new_br / 3:
+            subprocess.run(["xbacklight", "-set", str(new_br)])
+
+    #set new brightness for the first time
+    def set_first_br(new_br):
+        if new_br < config.min_br:
+            new_br = config.min_br
+        if new_br > config.max_br:
+            new_br = config.max_br
         subprocess.run(["xbacklight", "-set", str(new_br)])
 
     #add or subtract from current brightness
     def change_br(add):
-        current = _get_br()
-        _set_br(current+add)
+        current = get_br()
+        set_br(current+add)
 
-    #_change_br(10)
-    #_change_br(-10)
+    #change_br(10)
+    #change_br(-10)
