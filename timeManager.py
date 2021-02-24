@@ -2,6 +2,7 @@ from datetime import datetime, time
 import json
 import requests
 import math
+from time import sleep
 
 import config
 
@@ -28,9 +29,18 @@ class TimeManager:
         #using https://sunrise-sunset.org/api
         api_time_format = "%I:%M:%S %p"
 
-        r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
+        attempt = 0
+        while(True):
+            if attempt == 5:
+                raise requests.Timeout
+            try:
+                r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
+                break;
+            except (requests.ConnectionError, requests.Timeout) as exception:
+                sleep(10)
+                attempt += 1
         if(r.status_code != 200):
-            return -1
+            return r.status_code
 
         res_j = r.json()['results']
 
@@ -62,6 +72,8 @@ class TimeManager:
         return c+((d-c)/(b-a))*(x-a)
 
     def get_current_br(self):
+        if self.sunrise == None:
+            self.get_todays_sunrise()
         self.update_time()
         now = self.get_seconds(self.current_time)
         x = self.convert_to_normal_function_interval(self.get_seconds(self.astronomical_twilight_begin),
