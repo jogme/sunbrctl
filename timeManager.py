@@ -19,10 +19,13 @@ class TimeManager:
     nautical_twilight_end = None
     astronomical_twilight_begin = None
     astronomical_twilight_end = None
+
+    hooks = None
     
-    def __init__(self):
+    def __init__(self, routine=None):
         self.update_time()
         self.get_todays_sunrise()
+        self.hooks = routine
     def update_time(self):
         self.current_time = datetime.now().time()
     def get_todays_sunrise(self):
@@ -77,5 +80,5 @@ class TimeManager:
         self.update_time()
         now = self.get_seconds(self.current_time)
         x = self.convert_to_normal_function_interval(self.get_seconds(self.astronomical_twilight_begin),
-                self.get_seconds(self.astronomical_twilight_end), 0.2, 5.7, now)
+                self.get_seconds(self.astronomical_twilight_end), 0, 6, now)
         return self._normal_function(x)

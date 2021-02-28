@@ -13,7 +13,7 @@ class HwBrightnessControl:
             new_br = config.min_br
         if new_br > config.max_br:
             new_br = config.max_br
-        if abs(int(HwBrightnessControl.get_br())-new_br) < new_br / 3:
+        if abs(int(HwBrightnessControl.get_br())-new_br) < config.user_threshold:
             subprocess.run(["xbacklight", "-set", str(new_br)])
 
     #set new brightness for the first time
