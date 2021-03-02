@@ -7,7 +7,9 @@ from time import sleep
 import config
 
 class TimeManager:
-    current_time = datetime.now().time()
+    theMediator = None
+    current_time = time(0,0,0)
+    current_day = datetime.now().day
 
     sunrise = None
     noon = None
@@ -20,14 +22,36 @@ class TimeManager:
     astronomical_twilight_begin = None
     astronomical_twilight_end = None
 
-    hooks = None
+    enable_hooks = [False, False]
+    hook_morning_time = None
+    hook_evening_time = None
+    hook_morning_do = True
+    hook_evening_do = True
     
-    def __init__(self, routine=None):
-        self.update_time()
+    def __init__(self, mediator, enable_hooks):
+        self.theMediator = mediator
+        self.enable_hooks = enable_hooks
         self.get_todays_sunrise()
-        self.hooks = routine
+        self.update_time()
     def update_time(self):
-        self.current_time = datetime.now().time()
+        d = datetime.now()
+        new_time = d.time()
+
+        if d.day != self.current_day:
+            #midnight
+            self.get_todays_sunrise()
+            self.hook_morning_do = True
+            self.hook_evening_do = True
+            self.current_day = d.day
+
+        if self.enable_hooks[0] and self.hook_morning_do and new_time > self.hook_morning_time and new_time < self.hook_evening_time:
+            self.theMediator.notify(self, 'h_m')
+            self.hook_morning_do = False
+        elif self.enable_hooks[1] and self.hook_evening_do and (new_time > self.hook_evening_time or new_time < self.hook_morning_time):
+            self.theMediator.notify(self, 'h_e')
+            self.hook_evening_do = False
+
+        self.current_time = new_time
     def get_todays_sunrise(self):
         #using https://sunrise-sunset.org/api
         api_time_format = "%I:%M:%S %p"
@@ -57,6 +81,20 @@ class TimeManager:
         self.nautical_twilight_end = datetime.strptime(res_j['nautical_twilight_end'], api_time_format).time()
         self.astronomical_twilight_begin = datetime.strptime(res_j['astronomical_twilight_begin'], api_time_format).time()
         self.astronomical_twilight_end = datetime.strptime(res_j['astronomical_twilight_end'], api_time_format).time()
+
+        if self.enable_hooks[0] == 'civil':
+            self.hook_morning_time = self.civil_twilight_begin
+        elif self.enable_hooks[0] == 'nautical':
+            self.hook_morning_time = self.nautical_twilight_begin
+        elif self.enable_hooks[0] == 'astronomical':
+            self.hook_morning_time = self.astronomical_twilight_begin
+
+        if self.enable_hooks[1] == 'civil':
+            self.hook_evening_time = self.civil_twilight_end
+        elif self.enable_hooks[1] == 'nautical':
+            self.hook_evening_time = self.nautical_twilight_end
+        elif self.enable_hooks[1] == 'astronomical':
+            self.hook_evening_time = self.astronomical_twilight_end
 
     def get_seconds(self, time):
         return ((time.hour*60)+time.minute)*60+time.second
