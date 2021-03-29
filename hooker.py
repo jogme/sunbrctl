@@ -39,7 +39,7 @@ class Hooker:
             scripts = f.read().split('\n')
         scripts = scripts[:-1] if not len(scripts[-1]) else scripts
         for s in scripts:
-            run(s + " disown", shell=True)
+            run(s, shell=True)
     def do_morning(self):
         self._do_routine(0)
     def do_evening(self):
