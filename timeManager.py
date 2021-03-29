@@ -27,6 +27,8 @@ class TimeManager:
     hook_evening_time = None
     hook_morning_do = True
     hook_evening_do = True
+
+    no_internet = False
     
     def __init__(self, mediator, enable_hooks):
         self.theMediator = mediator
@@ -61,21 +63,36 @@ class TimeManager:
         #using https://sunrise-sunset.org/api
         api_time_format = "%I:%M:%S %p"
 
-        attempt = 0
-        while(True):
-            if attempt == 5:
-                # retry after 10mins
-                sleep(600)
-            try:
-                r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
-                break;
-            except (requests.ConnectionError, requests.Timeout) as exception:
-                sleep(10)
-                attempt += 1
-        if(r.status_code != 200):
-            return r.status_code
+        try:
+            r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
+            if(r.status_code != 200):
+                return r.status_code
+            self.no_internet = False
+        except (requests.ConnectionError, requests.Timeout) as exception:
+            self.no_internet = True
 
-        res_j = r.json()['results']
+        if self.no_internet:
+            try:
+                with open("latest.data", "r") as f:
+                    res_j = json.load(f)['results']
+            except:
+                while True:
+                    try:
+                        r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
+                        if(r.status_code != 200):
+                            return r.status_code
+                        self.no_internet = False
+                        break
+                    except (requests.ConnectionError, requests.Timeout) as exception:
+                        sleep(10)
+            print('no internet is present')
+
+        if not self.no_internet:
+            with open("latest.data", "w+") as f:
+                json.dump(r.json(), f)
+                print('new data written to file')
+            print('internet is here')
+            res_j = r.json()['results']
 
         self.sunrise = datetime.strptime(res_j['sunrise'], api_time_format).time()
         self.sunset = datetime.strptime(res_j['sunset'], api_time_format).time()
@@ -119,7 +136,8 @@ class TimeManager:
         return c+((d-c)/(b-a))*(x-a)
 
     def get_current_br(self):
-        if self.sunrise == None:
+        if self.no_internet:
+            print('trying to get new data')
             self.get_todays_sunrise()
         self.update_time()
         now = self.get_seconds(self.current_time)
