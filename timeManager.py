@@ -32,6 +32,11 @@ class TimeManager:
         self.theMediator = mediator
         self.enable_hooks = enable_hooks
         self.get_todays_sunrise()
+        try:
+            if not config.morning_on_startup:
+                self.hook_morning_do = False
+        except NameError:
+            pass
         self.update_time()
     def update_time(self):
         d = datetime.now()
@@ -59,7 +64,8 @@ class TimeManager:
         attempt = 0
         while(True):
             if attempt == 5:
-                raise requests.Timeout
+                # retry after 10mins
+                sleep(600)
             try:
                 r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
                 break;
