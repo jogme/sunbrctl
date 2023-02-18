@@ -29,6 +29,8 @@ class TimeManager:
     hook_evening_do = True
 
     no_internet = False
+    minB = 0
+    maxB = 100
     
     def __init__(self, mediator, enable_hooks):
         self.theMediator = mediator
@@ -39,9 +41,9 @@ class TimeManager:
                 self.hook_morning_do = False
         except NameError:
             pass
-        self.update_time()
-    def update_time(self):
-        d = datetime.now()
+        self.update_time('first')
+    def update_time(self, order=None):
+        d = datetime.utcnow()
         new_time = d.time()
 
         if d.day != self.current_day:
@@ -50,6 +52,7 @@ class TimeManager:
             self.hook_morning_do = True
             self.hook_evening_do = True
             self.current_day = d.day
+            sleep(self.get_seconds(self.astronomical_twilight_being))
 
         if self.enable_hooks[0] and self.hook_morning_do and new_time > self.hook_morning_time and new_time < self.hook_evening_time:
             self.theMediator.notify(self, 'h_m')
@@ -57,24 +60,32 @@ class TimeManager:
         elif self.enable_hooks[1] and self.hook_evening_do and (new_time > self.hook_evening_time or new_time < self.hook_morning_time):
             self.theMediator.notify(self, 'h_e')
             self.hook_evening_do = False
+        if not order and new_time > self.astronomical_twilight_end:
+            #86400s is a day + 60s to go past midnight
+            self.theMediator.debug('get_todays_sunrise: going to sleep. Good night!')
+            sleep((self.get_seconds(self.astronomical_twilight_end)-86460)*-1)
 
         self.current_time = new_time
     def get_todays_sunrise(self):
         #using https://sunrise-sunset.org/api
         api_time_format = "%I:%M:%S %p"
+        self.theMediator.debug('getting todays sunrise data')
 
         try:
+            self.theMediator.debug("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
             r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
             if(r.status_code != 200):
                 return r.status_code
-            self.no_internet = False
+            #self.no_internet = False
         except (requests.ConnectionError, requests.Timeout) as exception:
             self.no_internet = True
 
         if self.no_internet:
+            self.theMediator.debug('get_todays_sunrise: no internet connection')
             try:
                 with open("latest.data", "r") as f:
                     res_j = json.load(f)['results']
+                    self.theMediator.debug('get_todays_sunrise: opened old sunrise data file')
             except:
                 while True:
                     try:
@@ -85,13 +96,11 @@ class TimeManager:
                         break
                     except (requests.ConnectionError, requests.Timeout) as exception:
                         sleep(10)
-            print('no internet is present')
 
-        if not self.no_internet:
-            with open("latest.data", "w+") as f:
+        else:
+            with open("latest.data", "w") as f:
                 json.dump(r.json(), f)
-                print('new data written to file')
-            print('internet is here')
+                self.theMediator.debug('get_todays_sunrise: written new sunrise data to the file')
             res_j = r.json()['results']
 
         self.sunrise = datetime.strptime(res_j['sunrise'], api_time_format).time()
@@ -124,8 +133,16 @@ class TimeManager:
 
     #domain: the function gives non-zero output on the interval of <0.2,5.7>
     #the center is at 3
-    def _normal_function(self, x):
-        return int(((1/(0.35*math.sqrt(2*math.pi)))**((-(x-3)**6)/2**4))*100)
+    def _normal_function(self, x, minB, maxB):
+        minB /= 100
+        maxB /= 100
+        base = 1/(0.35*math.sqrt(2*math.pi))
+        return int((base**(((-(x-3)**6)/(2**4))+math.log(maxB-minB, base))+minB)*100)
+    #domain: the function gives non-zero output on the interval of <0,8>
+    #the center is at 4
+    def _normal_function_evening(self, x):
+        base = 1/(0.35*math.sqrt(2*math.pi))
+        return int(((1/(0.35*math.sqrt(2*math.pi)))**((-(x-4)**4)/2**3))*100)
 
     #<a,b> is the input interval
     #<c,d> is the output interval
@@ -135,12 +152,12 @@ class TimeManager:
             raise
         return c+((d-c)/(b-a))*(x-a)
 
-    def get_current_br(self):
-        if self.no_internet:
-            print('trying to get new data')
-            self.get_todays_sunrise()
-        self.update_time()
+    def get_current_br(self, order=None):
+        #if not self.no_internet:
+        #    self.get_todays_sunrise()
+        self.update_time(order)
         now = self.get_seconds(self.current_time)
         x = self.convert_to_normal_function_interval(self.get_seconds(self.astronomical_twilight_begin),
                 self.get_seconds(self.astronomical_twilight_end), 0, 6, now)
-        return self._normal_function(x)
+        #FIXME control variables existence
+        return self._normal_function(x, config.min_br, config.max_br)

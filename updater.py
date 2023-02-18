@@ -5,4 +5,3 @@ class Updater:
         self.theMediator = mediator
     def update(self):
         self.theMediator.notify(self)
-
