@@ -1,0 +1,52 @@
+# This file contains a default config file setting. To use it remove the `.def`
+# at the end of the file and uncomment the options you whish to use.
+
+#### Mandatory options ####
+### Location
+## Used to determine the sunrise/sunset at the users location.
+## example for Paris:
+
+# lat='48.864716'
+# lng='2.349014'
+
+### Update interval
+## The interval of the monitor brightness update. Too small number will result
+## in high frequency update and vice-versa respectively.
+
+# sleep_time_s=60
+
+### Update threshold
+## The difference between current and value to be set stating when to make
+## the update. Which means if the current br is 10%, the newly calculated value
+## is 15% and the threshold is 5%, then the brightness is going to be updated.
+
+# user_threshold=5
+
+#### Optional options ####
+### Minimum and maximum brightness
+## The app uses a function to calculate the brightness using the sunrise and
+## sunset values. However the minimum/maximum possible values can be set by this
+## options.
+## p.s. You most possibly don't want to use 0 minimum brightness
+
+#min_br=2
+#max_br=90
+
+#### Features ####
+### Hooks
+## It is possible to hook scripts at morning and at evening. The scripts can be
+## used for various things f.e. changing between day and night rice, sending an
+## `echo "Good morning fella"` message..
+## `evening` and `morning` variables are used to say at which sunrise/sunset
+## should be the scripts evaluated. Options:
+## - "astronomical"
+## - "nautical"
+## - "civil"
+
+#morning='astronomical'
+#evening='civil'
+
+## If `morning_on_startup` is not defined then the morning routine won't be
+## evaluated when the program starts.
+
+# morning_on_startup=1

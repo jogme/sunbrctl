@@ -1,5 +1,14 @@
 # sunrise-brightness-control
-Brightness control according the sun position
+Brightness control based on the position of the sun
+
+Setting the monitor's brightness level through the day and sleeps at night.
+In addition, it is able to run a bash script specified in the config file at
+sunrise and sunset. This enables f.e. to define two different rices for day
+and night.
+
+To config the brightnessControl check `config.py.def` file.
+
+To use the controll hook `python main.py` to your startup.
 
 #TODO
 what to do to make ddcutil work:
