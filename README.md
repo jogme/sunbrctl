@@ -10,6 +10,10 @@ To config the brightnessControl check `config.py.def` file.
 
 To use the controll hook `python main.py` to your startup.
 
+The main.py can be run with options:
+- '-v' for debug messages
+- '-e' for supporting one external monitor
+
 #TODO
 what to do to make ddcutil work:
 - add sudo permission without pswd to run ddcutil
