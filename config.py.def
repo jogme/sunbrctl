@@ -37,6 +37,8 @@
 ## It is possible to hook scripts at morning and at evening. The scripts can be
 ## used for various things f.e. changing between day and night rice, sending an
 ## `echo "Good morning fella"` message..
+## the scripts should be names `morning_routine` and `evening_routine`
+## respectively and placed to the main directory.
 ## `evening` and `morning` variables are used to say at which sunrise/sunset
 ## should be the scripts evaluated. Options:
 ## - "astronomical"
