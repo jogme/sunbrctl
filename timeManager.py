@@ -43,7 +43,7 @@ class TimeManager:
             pass
         self.update_time('first')
     def update_time(self, order=None):
-        d = datetime.utcnow()
+        d = datetime.now()
         new_time = d.time()
 
         if d.day != self.current_day:
@@ -54,6 +54,12 @@ class TimeManager:
             self.current_day = d.day
             sleep(self.get_seconds(self.astronomical_twilight_being))
 
+        # FIXME
+        # there is an issue with non-DST as then the api returns some different times
+        # this works nice in summertime (DST)
+        self.theMediator.debug("new_time: " + new_time.strftime("%H:%M:%S"))
+        self.theMediator.debug("evening hook time: " + self.hook_evening_time.strftime("%H:%M:%S"))
+        self.theMediator.debug("morning hook time: " + self.hook_morning_time.strftime("%H:%M:%S"))
         if self.enable_hooks[0] and self.hook_morning_do and new_time > self.hook_morning_time and new_time < self.hook_evening_time:
             self.theMediator.notify(self, 'h_m')
             self.hook_morning_do = False
