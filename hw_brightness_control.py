@@ -35,7 +35,7 @@ class HwBrightnessControl:
         self.mediator.debug('set_first_br: setting: {}'.format(new_br))
         subprocess.run(["xbacklight", "-set", str(new_br)])
         if self.mediator.external:
-            subprocess.run(['sudo', 'ddcutil', 'setvcp', '-d', '1', '10', str(new_br)])
+            subprocess.run(['ddcutil', 'setvcp', '-d', '1', '10', str(new_br)])
             self.current_external = new_br
 
     #add or subtract from current brightness
