@@ -29,8 +29,6 @@ class TimeManager:
     hook_evening_do = True
 
     no_internet = False
-    minB = 0
-    maxB = 100
     
     def __init__(self, mediator, enable_hooks):
         self.theMediator = mediator

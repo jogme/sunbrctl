@@ -1,10 +1,10 @@
-# Main file of the app 'name_of_the_app'
+# Main file of the app 'sunrise-brightness-control'
 # The application is for controlling display brightness
 # depending on current time
 # author: jogme
 
-from time import sleep
 import argparse
+from time import sleep
 
 import config
 from mediator import Mediator
