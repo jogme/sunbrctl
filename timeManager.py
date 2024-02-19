@@ -57,9 +57,9 @@ class TimeManager:
         # FIXME
         # there is an issue with non-DST as then the api returns some different times
         # this works nice in summertime (DST)
-        self.theMediator.debug("new_time: " + new_time.strftime("%H:%M:%S"))
-        self.theMediator.debug("evening hook time: " + self.hook_evening_time.strftime("%H:%M:%S"))
-        self.theMediator.debug("morning hook time: " + self.hook_morning_time.strftime("%H:%M:%S"))
+        self.theMediator.debug("update_time: new_time: " + new_time.strftime("%H:%M:%S"))
+        self.theMediator.debug("update_time: evening hook time: " + self.hook_evening_time.strftime("%H:%M:%S"))
+        self.theMediator.debug("update_time: morning hook time: " + self.hook_morning_time.strftime("%H:%M:%S"))
         if self.enable_hooks[0] and self.hook_morning_do and new_time > self.hook_morning_time and new_time < self.hook_evening_time:
             self.theMediator.notify(self, 'h_m')
             self.hook_morning_do = False
@@ -68,17 +68,17 @@ class TimeManager:
             self.hook_evening_do = False
         if not order and new_time > self.astronomical_twilight_end:
             #86400s is a day + 60s to go past midnight
-            self.theMediator.debug('get_todays_sunrise: going to sleep. Good night!')
+            self.theMediator.debug('update_time: going to sleep. Good night!')
             sleep((self.get_seconds(self.astronomical_twilight_end)-86460)*-1)
 
         self.current_time = new_time
     def get_todays_sunrise(self):
         #using https://sunrise-sunset.org/api
         api_time_format = "%I:%M:%S %p"
-        self.theMediator.debug('getting todays sunrise data')
+        self.theMediator.debug('get_todays_sunrise: getting todays sunrise data')
 
         try:
-            self.theMediator.debug("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
+            self.theMediator.debug("get_todays_sunrise: https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
             r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
             if(r.status_code != 200):
                 return r.status_code

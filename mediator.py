@@ -30,10 +30,10 @@ class Mediator:
             self.hw.set_br(self.time_manager.get_current_br())
         elif type(sender) is TimeManager:
             if event == 'h_m':
-                self.debug('doing morning routine')
+                self.debug('notify: doing morning routine')
                 self.pimp.do_morning()
             elif event == 'h_e':
-                self.debug('doing evening routine')
+                self.debug('notify: doing evening routine')
                 self.pimp.do_evening()
     def debug(self, message):
         if self.v:
