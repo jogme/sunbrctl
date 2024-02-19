@@ -8,7 +8,7 @@ and night.
 
 To config the brightnessControl check `config.py.def` file.
 
-To use the controll hook `python main.py` to your startup.
+To use the control hook `python main.py` to your startup.
 
 The main.py can be run with options:
 - '-v' for debug messages
