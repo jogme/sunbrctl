@@ -8,6 +8,8 @@ from hw_brightness_control import HwBrightnessControl
 from hooker import Hooker
 from updater import Updater
 
+import config
+
 class Mediator:
     time_manager = None
     updater = None
@@ -15,6 +17,8 @@ class Mediator:
     hw = None
     v = False
     external = False
+    min_br = 5
+    max_br = 95
 
     def __init__(self, v, e):
         self.v = v
@@ -24,6 +28,16 @@ class Mediator:
         self.updater = Updater(self)
         self.hw = HwBrightnessControl(self)
         self.hw.set_first_br(self.time_manager.get_current_br(order='first'))
+        try:
+            self.min_br = config.min_br
+        except:
+            # keep default
+            pass
+        try:
+            self.max_br = config.max_br
+        except:
+            # keep default
+            pass
     def notify(self, sender, event=None):
         self.debug('notify: message from: {}'.format(sender))
         if type(sender) is Updater:

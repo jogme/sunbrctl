@@ -82,7 +82,6 @@ class TimeManager:
             r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
             if(r.status_code != 200):
                 return r.status_code
-            #self.no_internet = False
         except (requests.ConnectionError, requests.Timeout) as exception:
             self.no_internet = True
 
@@ -159,11 +158,8 @@ class TimeManager:
         return c+((d-c)/(b-a))*(x-a)
 
     def get_current_br(self, order=None):
-        #if not self.no_internet:
-        #    self.get_todays_sunrise()
         self.update_time(order)
         now = self.get_seconds(self.current_time)
         x = self.convert_to_normal_function_interval(self.get_seconds(self.astronomical_twilight_begin),
                 self.get_seconds(self.astronomical_twilight_end), 0, 6, now)
-        #FIXME control variables existence
-        return self._normal_function(x, config.min_br, config.max_br)
+        return self._normal_function(x, self.theMediator.min_br, self.theMediator.max_br)
