@@ -38,3 +38,6 @@ class Mediator:
     def debug(self, message):
         if self.v:
             print('debug: ' + message)
+            with open('/home/mountain/brightnessControl.log', 'a') as f:
+                # write a logfile when run as a daemon
+                f.write(message + '\n')
