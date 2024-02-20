@@ -3,14 +3,12 @@
 # depending on current time
 # author: jogme
 
-from timeManager import TimeManager
 from hw_brightness_control import HwBrightnessControl
 from updater import Updater
 
 import config
 
 class Mediator:
-    time_manager = None
     updater = None
     hw = None
     v = False
@@ -21,10 +19,9 @@ class Mediator:
     def __init__(self, v, e):
         self.v = v
         self.external = e
-        self.time_manager = TimeManager(self)
         self.updater = Updater(self)
         self.hw = HwBrightnessControl(self)
-        self.hw.set_first_br(self.time_manager.get_current_br(order='first'))
+        self.hw.set_first_br()
         try:
             self.min_br = config.min_br
         except:
@@ -38,7 +35,7 @@ class Mediator:
     def notify(self, sender, event=None):
         self.debug('notify: message from: {}'.format(sender))
         if type(sender) is Updater:
-            self.hw.set_br(self.time_manager.get_current_br())
+            self.hw.set_br()
     def debug(self, message):
         if self.v:
             print('debug: ' + message)
