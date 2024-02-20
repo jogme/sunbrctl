@@ -3,15 +3,16 @@ import re
 
 import config
 from timeManager import TimeManager
+from debug import debug
 
 class HwBrightnessControl:
     external_monitors = dict()
     current_external = 0
     time_manager = None
 
-    def __init__(self, mediator):
-        self.mediator = mediator
-        self.time_manager = TimeManager(mediator)
+    def __init__(self):
+        self.time_manager = TimeManager()
+        self.set_first_br()
 
     #get current brightness
     def get_br(self, external=False):
@@ -24,14 +25,14 @@ class HwBrightnessControl:
     def set_br(self):
         current = self.get_br()
         new_br = self.time_manager.get_current_br()
-        self.mediator.debug('set_br: current: {}, new: {}'.format(current, new_br))
-        if self.mediator.external:
+        debug('set_br: current: {}, new: {}'.format(current, new_br))
+        if config.external:
             current_external = self.get_br(external=True)
         if current != new_br and abs(current-new_br) > config.user_threshold:
-            self.mediator.debug('set_br: setting xbacklight')
+            debug('set_br: setting xbacklight')
             subprocess.run(["xbacklight", "-set", str(new_br)])
         #set the external too
-        if self.mediator.external:
+        if config.external:
             if self.current_external != new_br and \
                abs(self.current_external-new_br) < config.user_threshold:
                 #for now if the monitor is not connected, the call will fail and nothing happens
@@ -41,9 +42,9 @@ class HwBrightnessControl:
     #set new brightness for the first time
     def set_first_br(self):
         new_br = self.time_manager.get_current_br(order='first')
-        self.mediator.debug('set_first_br: setting: {}'.format(new_br))
+        debug('set_first_br: setting: {}'.format(new_br))
         subprocess.run(["xbacklight", "-set", str(new_br)])
-        if self.mediator.external:
+        if config.external:
             subprocess.run(['ddcutil', 'setvcp', '-d', '1', '10', str(new_br)])
             self.current_external = new_br
 

@@ -6,9 +6,9 @@ from time import sleep
 
 import config
 from hooker import Hooker
+from debug import debug
 
 class TimeManager:
-    theMediator = None
     pimp = None
     current_time = time(0,0,0)
     current_day = datetime.now().day
@@ -29,8 +29,7 @@ class TimeManager:
 
     no_internet = False
     
-    def __init__(self, mediator):
-        self.theMediator = mediator
+    def __init__(self):
         self.pimp = Hooker()
         self.get_todays_sunrise()
         try:
@@ -54,9 +53,9 @@ class TimeManager:
         # FIXME
         # there is an issue with non-DST as then the api returns some different times
         # this works nice in summertime (DST)
-        self.theMediator.debug("update_time: new_time: " + new_time.strftime("%H:%M:%S"))
-        self.theMediator.debug("update_time: evening hook time: " + self.pimp.evening_time.strftime("%H:%M:%S"))
-        self.theMediator.debug("update_time: morning hook time: " + self.pimp.morning_time.strftime("%H:%M:%S"))
+        debug("update_time: new_time: " + new_time.strftime("%H:%M:%S"))
+        debug("update_time: evening hook time: " + self.pimp.evening_time.strftime("%H:%M:%S"))
+        debug("update_time: morning hook time: " + self.pimp.morning_time.strftime("%H:%M:%S"))
         if self.pimp.morning_r and self.hook_morning_do and new_time > self.pimp.morning_time and new_time < self.pimp.evening_time:
             self.pimp.do_morning()
             self.hook_morning_do = False
@@ -65,17 +64,17 @@ class TimeManager:
             self.hook_evening_do = False
         if not order and new_time > self.astronomical_twilight_end:
             #86400s is a day + 60s to go past midnight
-            self.theMediator.debug('update_time: going to sleep. Good night!')
+            debug('update_time: going to sleep. Good night!')
             sleep((self.get_seconds(self.astronomical_twilight_end)-86460)*-1)
 
         self.current_time = new_time
     def get_todays_sunrise(self):
         #using https://sunrise-sunset.org/api
         api_time_format = "%I:%M:%S %p"
-        self.theMediator.debug('get_todays_sunrise: getting todays sunrise data')
+        debug('get_todays_sunrise: getting todays sunrise data')
 
         try:
-            self.theMediator.debug("get_todays_sunrise: https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
+            debug("get_todays_sunrise: https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
             r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
             if(r.status_code != 200):
                 return r.status_code
@@ -83,11 +82,11 @@ class TimeManager:
             self.no_internet = True
 
         if self.no_internet:
-            self.theMediator.debug('get_todays_sunrise: no internet connection')
+            debug('get_todays_sunrise: no internet connection')
             try:
                 with open("latest.data", "r") as f:
                     res_j = json.load(f)['results']
-                    self.theMediator.debug('get_todays_sunrise: opened old sunrise data file')
+                    debug('get_todays_sunrise: opened old sunrise data file')
             except:
                 while True:
                     try:
@@ -102,7 +101,7 @@ class TimeManager:
         else:
             with open("latest.data", "w") as f:
                 json.dump(r.json(), f)
-                self.theMediator.debug('get_todays_sunrise: written new sunrise data to the file')
+                debug('get_todays_sunrise: written new sunrise data to the file')
             res_j = r.json()['results']
 
         self.sunrise = datetime.strptime(res_j['sunrise'], api_time_format).time()
@@ -159,4 +158,4 @@ class TimeManager:
         now = self.get_seconds(self.current_time)
         x = self.convert_to_normal_function_interval(self.get_seconds(self.astronomical_twilight_begin),
                 self.get_seconds(self.astronomical_twilight_end), 0, 6, now)
-        return self._normal_function(x, self.theMediator.min_br, self.theMediator.max_br)
+        return self._normal_function(x, config.min_br, config.max_br)
