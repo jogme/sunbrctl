@@ -13,8 +13,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
                         prog='BrightnessControl',
                         description='automatic monitor brightness control')
-    parser.add_argument('-v', action='store_true')
-    parser.add_argument('-e', '--external', action='store_true')
+    parser.add_argument('-v', action='store_true', help='Enable debug logs')
+    parser.add_argument('-e', '--external', action='store_true', help='Enable external monitor')
     args = parser.parse_args()
 
     mediator = Mediator(args.v, args.external)
