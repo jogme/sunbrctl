@@ -7,7 +7,6 @@ from debug import debug
 
 class HwBrightnessControl:
     external_monitors = dict()
-    current_external = 0
     time_manager = None
 
     def __init__(self):
@@ -46,20 +45,16 @@ class HwBrightnessControl:
         subprocess.run(["xbacklight", "-set", str(new_br)])
         if config.external:
             subprocess.run(['ddcutil', 'setvcp', '-d', '1', '10', str(new_br)])
-            self.current_external = new_br
 
     #add or subtract from current brightness
-    def change_br(self, add):
-        current = get_br()
-        set_br(current+add)
-    
-    #detect external monitors
-    #def get_ext_monitors():
-    #    ms = subprocess.run(["sudo", "ddcutil", "detect"], capture_output=True, text=True).stdout
-    #    for block in ms.split('\n\n'):
-    #        r = re.match('Display [0-9]+', block.split('\n')[0])
-    #        if r:
-    #            self.external_monitors[r[0].split()[1]] = ['min', 'max']
-
-    #change_br(10)
-    #change_br(-10)
+    def change_br(self, add, external):
+        current = self.get_br(external=external)
+        debug('change_br: current brightness: {}'.format(current))
+        new_br = current+add
+        debug('change_br: new brightness: {}'.format(new_br))
+        if external:
+            debug('change_br: setting: {} on external'.format(new_br))
+            subprocess.run(['ddcutil', 'setvcp', '-d', '1', '10', str(new_br)])
+        else:
+            debug('change_br: setting: {} on internal'.format(new_br))
+            subprocess.run(["xbacklight", "-set", str(new_br)])
