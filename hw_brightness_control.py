@@ -16,7 +16,7 @@ class HwBrightnessControl:
     #get current brightness
     def get_br(self, external=False):
         if external:
-            return int(subprocess.run(['sudo', 'ddcutil', 'getvcp', '-d', '1', '10'], capture_output=True, text=True).stdout)
+            return int(subprocess.run(['sudo', 'ddcutil', 'getvcp', '-d', '1', '10'], capture_output=True, text=True).stdout.split('current value =    ')[1].split(',')[0])
         else:
             return int(float(subprocess.run(["xbacklight", "-get"], capture_output=True, text=True).stdout[:-1]))
 
