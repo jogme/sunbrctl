@@ -27,9 +27,6 @@ class Hooker:
         except NameError:
             self.evening_r = None
 
-    def get_hooks(self):
-        return [self.morning_time if self.morning_r is not None else False, \
-                self.evening_time if self.evening_r is not None else False]
     def _do_routine(self, r_type):
         if r_type == 0:
             r = self.morning_r

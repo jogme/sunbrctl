@@ -5,7 +5,6 @@
 
 from timeManager import TimeManager
 from hw_brightness_control import HwBrightnessControl
-from hooker import Hooker
 from updater import Updater
 
 import config
@@ -13,7 +12,6 @@ import config
 class Mediator:
     time_manager = None
     updater = None
-    pimp = None
     hw = None
     v = False
     external = False
@@ -23,8 +21,7 @@ class Mediator:
     def __init__(self, v, e):
         self.v = v
         self.external = e
-        self.pimp = Hooker()
-        self.time_manager = TimeManager(self, enable_hooks=self.pimp.get_hooks())
+        self.time_manager = TimeManager(self)
         self.updater = Updater(self)
         self.hw = HwBrightnessControl(self)
         self.hw.set_first_br(self.time_manager.get_current_br(order='first'))
@@ -42,13 +39,6 @@ class Mediator:
         self.debug('notify: message from: {}'.format(sender))
         if type(sender) is Updater:
             self.hw.set_br(self.time_manager.get_current_br())
-        elif type(sender) is TimeManager:
-            if event == 'h_m':
-                self.debug('notify: doing morning routine')
-                self.pimp.do_morning()
-            elif event == 'h_e':
-                self.debug('notify: doing evening routine')
-                self.pimp.do_evening()
     def debug(self, message):
         if self.v:
             print('debug: ' + message)

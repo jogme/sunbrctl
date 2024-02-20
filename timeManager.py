@@ -5,9 +5,11 @@ import math
 from time import sleep
 
 import config
+from hooker import Hooker
 
 class TimeManager:
     theMediator = None
+    pimp = None
     current_time = time(0,0,0)
     current_day = datetime.now().day
 
@@ -22,17 +24,14 @@ class TimeManager:
     astronomical_twilight_begin = None
     astronomical_twilight_end = None
 
-    enable_hooks = [False, False]
-    hook_morning_time = None
-    hook_evening_time = None
     hook_morning_do = True
     hook_evening_do = True
 
     no_internet = False
     
-    def __init__(self, mediator, enable_hooks):
+    def __init__(self, mediator):
         self.theMediator = mediator
-        self.enable_hooks = enable_hooks
+        self.pimp = Hooker()
         self.get_todays_sunrise()
         try:
             if not config.morning_on_startup:
@@ -56,13 +55,13 @@ class TimeManager:
         # there is an issue with non-DST as then the api returns some different times
         # this works nice in summertime (DST)
         self.theMediator.debug("update_time: new_time: " + new_time.strftime("%H:%M:%S"))
-        self.theMediator.debug("update_time: evening hook time: " + self.hook_evening_time.strftime("%H:%M:%S"))
-        self.theMediator.debug("update_time: morning hook time: " + self.hook_morning_time.strftime("%H:%M:%S"))
-        if self.enable_hooks[0] and self.hook_morning_do and new_time > self.hook_morning_time and new_time < self.hook_evening_time:
-            self.theMediator.notify(self, 'h_m')
+        self.theMediator.debug("update_time: evening hook time: " + self.pimp.evening_time.strftime("%H:%M:%S"))
+        self.theMediator.debug("update_time: morning hook time: " + self.pimp.morning_time.strftime("%H:%M:%S"))
+        if self.pimp.morning_r and self.hook_morning_do and new_time > self.pimp.morning_time and new_time < self.pimp.evening_time:
+            self.pimp.do_morning()
             self.hook_morning_do = False
-        elif self.enable_hooks[1] and self.hook_evening_do and (new_time > self.hook_evening_time or new_time < self.hook_morning_time):
-            self.theMediator.notify(self, 'h_e')
+        elif self.pimp.evening_r and self.hook_evening_do and (new_time > self.pimp.evening_time or new_time < self.pimp.morning_time):
+            self.pimp.do_evening()
             self.hook_evening_do = False
         if not order and new_time > self.astronomical_twilight_end:
             #86400s is a day + 60s to go past midnight
@@ -117,19 +116,19 @@ class TimeManager:
         self.astronomical_twilight_begin = datetime.strptime(res_j['astronomical_twilight_begin'], api_time_format).time()
         self.astronomical_twilight_end = datetime.strptime(res_j['astronomical_twilight_end'], api_time_format).time()
 
-        if self.enable_hooks[0] == 'civil':
-            self.hook_morning_time = self.civil_twilight_begin
-        elif self.enable_hooks[0] == 'nautical':
-            self.hook_morning_time = self.nautical_twilight_begin
-        elif self.enable_hooks[0] == 'astronomical':
-            self.hook_morning_time = self.astronomical_twilight_begin
+        if self.pimp.morning_time == 'civil':
+            self.pimp.morning_time = self.civil_twilight_begin
+        elif self.pimp.morning_time == 'nautical':
+            self.pimp.morning_time = self.nautical_twilight_begin
+        elif self.pimp.morning_time == 'astronomical':
+            self.pimp.morning_time = self.astronomical_twilight_begin
 
-        if self.enable_hooks[1] == 'civil':
-            self.hook_evening_time = self.civil_twilight_end
-        elif self.enable_hooks[1] == 'nautical':
-            self.hook_evening_time = self.nautical_twilight_end
-        elif self.enable_hooks[1] == 'astronomical':
-            self.hook_evening_time = self.astronomical_twilight_end
+        if self.pimp.evening_time == 'civil':
+            self.pimp.evening_time = self.civil_twilight_end
+        elif self.pimp.evening_time == 'nautical':
+            self.pimp.evening_time = self.nautical_twilight_end
+        elif self.pimp.evening_time == 'astronomical':
+            self.pimp.evening_time = self.astronomical_twilight_end
 
     def get_seconds(self, time):
         return ((time.hour*60)+time.minute)*60+time.second
