@@ -1,3 +1,5 @@
+#! /usr/bin/python
+
 # Main file of the app 'sunrise-brightness-control'
 # The application is for controlling display brightness
 # depending on current time
@@ -12,7 +14,7 @@ from sys import stderr
 
 import config
 from sunrise_brightness_control import dbus_con
-from sunrise_brightness_control import hw_brightness_control
+from sunrise_brightness_control.hw_brightness_control import HwBrightnessControl
 
 def updater(hw):
     while True:
@@ -23,7 +25,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
                         prog='BrightnessControl',
                         description='automatic monitor brightness control')
-    parser.add_argument('-v', action='store_true', help='Enable debug logs')
+    parser.add_argument('-v', action='store_true', default=False, help='Enable debug logs')
     parser.add_argument('-e', '--external', action='store_true', default=False, help='Enable external monitor')
     parser.add_argument('-c', '--change', type=int, help='Change brightness. If used with external option, \
                         change the external monitors brightness. The value should be given as a percentage \
@@ -33,8 +35,7 @@ def parse_arguments():
                         percentage (0 - 100).')
     args = parser.parse_args()
 
-    if args.v:
-        config.v = True
+    config.v = True
     config.external = args.external
 
     if args.change:
