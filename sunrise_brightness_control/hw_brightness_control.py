@@ -1,8 +1,8 @@
 import subprocess
 
 import config
-from timeManager import TimeManager
-from debug import debug
+from .timeManager import TimeManager
+from .debug import debug
 
 MANUAL_NONE = 0
 MANUAL_UP = 1

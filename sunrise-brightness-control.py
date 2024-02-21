@@ -11,8 +11,8 @@ from multiprocessing.managers import BaseManager
 from sys import stderr
 
 import config
-import dbus_con
-from hw_brightness_control import HwBrightnessControl
+from sunrise_brightness_control import dbus_con
+from sunrise_brightness_control import hw_brightness_control
 
 def updater(hw):
     while True:

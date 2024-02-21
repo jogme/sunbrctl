@@ -5,8 +5,8 @@ import math
 from time import sleep
 
 import config
-from hooker import Hooker
-from debug import debug
+from .hooker import Hooker
+from .debug import debug
 
 class TimeManager:
     pimp = None
