@@ -40,7 +40,6 @@ class HwBrightnessControl:
             subprocess.run(["xbacklight", "-set", str(val)])
     #set new brightness
     def set_br(self):
-        debug('set_br: was_manual: {}'.format(self.was_manual))
         debug('set_br: self: {}'.format(self))
         if self.was_manual != MANUAL_NONE:
             return
@@ -86,18 +85,13 @@ class HwBrightnessControl:
             subprocess.run(["xbacklight", "-set", str(new_br)])
         if add < 0:
             if self.was_manual == MANUAL_DOWN:
-                debug('change_br: was_manual set to none')
                 self.was_manual = MANUAL_NONE
                 self.set_br()
             else:
                 self.was_manual = MANUAL_UP
-                debug('change_br: was_manual set to up')
         else:
             if self.was_manual == MANUAL_UP:
                 self.was_manual = MANUAL_NONE
-                debug('change_br: was_manual set to none')
                 self.set_br()
             else:
                 self.was_manual = MANUAL_DOWN
-                debug('change_br: was_manual set to down {}'.format(self.was_manual))
-        debug('change_br: self: {}'.format(self))
