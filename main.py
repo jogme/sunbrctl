@@ -24,8 +24,11 @@ def parse_arguments():
     parser.add_argument('-v', action='store_true', help='Enable debug logs')
     parser.add_argument('-e', '--external', action='store_true', default=False, help='Enable external monitor')
     parser.add_argument('-c', '--change', type=int, help='Change brightness. If used with external option, \
-                        changes the external monitors brightness. The value should be given as a percentage \
+                        change the external monitors brightness. The value should be given as a percentage \
                         (-100 - 100). Either decreases or increases depending in the value.')
+    parser.add_argument('-s', '--set', type=int, help='Set specific brightness. If used with external \
+                        option, set the external monitors brightness. The value should be given as a \
+                        percentage (0 - 100).')
     args = parser.parse_args()
 
     if args.v:
@@ -37,6 +40,12 @@ def parse_arguments():
             print('The change value is out of bound.', file=stderr)
             exit(-1)
         dbus_con.send_change(args.change, args.external)
+        return 0
+    elif args.set:
+        if args.set < 0 or args.set > 100:
+            print('The set value is out of bound.', file=stderr)
+            exit(-1)
+        dbus_con.send_set(args.set, args.external)
         return 0
 
     return args

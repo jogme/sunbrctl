@@ -20,23 +20,29 @@ class HwBrightnessControl:
         else:
             return int(float(subprocess.run(["xbacklight", "-get"], capture_output=True, text=True).stdout[:-1]))
 
+    def set_br_manual(self, val, ext):
+        if ext:
+            debug('set_br_manual: setting ddcutil')
+            #for now if the monitor is not connected, the call will fail and nothing happens
+            subprocess.run(['sudo', 'ddcutil', 'setvcp', '-d', '1', '10', str(val)])
+        else:
+            debug('set_br_manual: setting xbacklight')
+            subprocess.run(["xbacklight", "-set", str(val)])
     #set new brightness
     def set_br(self):
         current = self.get_br()
         new_br = self.time_manager.get_current_br()
         debug('set_br: current: {}, new: {}'.format(current, new_br))
-        if config.external:
-            current_external = self.get_br(external=True)
+
         if current != new_br and abs(current-new_br) > config.user_threshold:
-            debug('set_br: setting xbacklight')
-            subprocess.run(["xbacklight", "-set", str(new_br)])
+            self.set_br_manual(new_br, False)
+
         #set the external too
         if config.external:
+            current_external = self.get_br(external=True)
             if self.current_external != new_br and \
                abs(self.current_external-new_br) < config.user_threshold:
-                #for now if the monitor is not connected, the call will fail and nothing happens
-                self.current_external = new_br
-                subprocess.run(['sudo', 'ddcutil', 'setvcp', '-d', '1', '10', str(new_br)])
+                   self.set_br_manual(new_br, True)
 
     #set new brightness for the first time
     def set_first_br(self):
