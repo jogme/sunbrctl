@@ -5,7 +5,9 @@
 
 import argparse
 from time import sleep
-from multiprocessing import Process
+from multiprocessing import Process, Manager
+from multiprocessing.managers import BaseManager
+
 from sys import stderr
 
 import config
@@ -61,9 +63,12 @@ if __name__ == "__main__":
     args = parse_arguments()
     if args == 0:
         exit(0)
-    hw = HwBrightnessControl()
+    BaseManager.register('HwBrightnessControl', HwBrightnessControl)
+    manager = BaseManager()
+    manager.start()
+    hw = manager.HwBrightnessControl()
 
-    p = Process(target=updater, args=(hw,))
+    p = Process(target=updater, args=[hw])
     p.start()
 
     # publish server and run the main loop
