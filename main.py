@@ -14,8 +14,8 @@ from hw_brightness_control import HwBrightnessControl
 
 def updater(hw):
     while True:
-        hw.set_br()
         sleep(config.sleep_time_s)
+        hw.set_br()
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
