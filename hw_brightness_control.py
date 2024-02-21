@@ -1,12 +1,10 @@
 import subprocess
-import re
 
 import config
 from timeManager import TimeManager
 from debug import debug
 
 class HwBrightnessControl:
-    external_monitors = dict()
     time_manager = None
 
     def __init__(self):
