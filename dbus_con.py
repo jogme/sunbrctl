@@ -1,5 +1,6 @@
 import pydbus
 from gi.repository import GLib
+from sys import stderr
 
 BUS_NAME='org.jogme.sunrise_brightness_control'
 
@@ -37,5 +38,10 @@ class BusDriver(object):
 def publish_dbus(hw):
     bus = pydbus.SessionBus()
     loop = GLib.MainLoop()
-    bus.publish(BUS_NAME, BusDriver(hw))
+    try:
+        bus.publish(BUS_NAME, BusDriver(hw))
+    except:
+        print('Could not publish on dbus;'
+              'an another instance of this program is already running.', file=stderr)
+        exit(-1)
     loop.run()
