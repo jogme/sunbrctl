@@ -81,12 +81,6 @@ def load_config(c_file=None):
         config['min_br'] = 5
     if not 'max_br' in config:
         config['max_br'] = 95
-    """
-    if not hasattr(config, 'min_br'):
-        config.min_br = 5
-    if not hasattr(config, 'max_br'):
-        config.max_br = 95
-    """
 
 if __name__ == "__main__":
     args = parse_arguments()
@@ -101,6 +95,12 @@ if __name__ == "__main__":
 
     p = Process(target=updater, args=[hw])
     p.start()
-
-    # publish server and run the main loop
-    dbus_con.publish_dbus(hw)
+    config.processes.append(p)
+    
+    try:
+        # publish server and run the main loop
+        dbus_con.publish_dbus(hw)
+    finally:
+        print('this works')
+        for x in config.processes:
+            x.terminate()

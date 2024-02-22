@@ -1,6 +1,7 @@
 from os import path
 from subprocess import run
 from .config import config
+from time import sleep
 
 class Hooker:
     morning_time = None
