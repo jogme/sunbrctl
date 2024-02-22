@@ -13,14 +13,9 @@ class Hooker:
             if 'evening_time' in config['hooks']:
                 self.evening_time = config['hooks']['evening_time']
 
-    def _do_routine(self, r_type):
-        if r_type == 0:
-            r = config['hooks']['morning_scripts_static']
-        else:
-            r = config['hooks']['evening_scripts_static']
+    def do_routine(self, which, wait=0, dynamic=True):
+        if wait:
+            sleep(wait)
+        r = config['hooks'][which+'_scripts_static']
         for s in r:
             run(s, shell=True)
-    def do_morning(self):
-        self._do_routine(0)
-    def do_evening(self):
-        self._do_routine(1)
