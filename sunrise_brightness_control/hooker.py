@@ -1,41 +1,24 @@
 from os import path
 from subprocess import run
-import config
+from config import config
 
 class Hooker:
-    routine_paths = ['./', '~/Projects/brightnessControl/']
     morning_time = None
     evening_time = None
-    morning_r = None
-    evening_r = None
 
     def __init__(self):
-        for r in self.routine_paths:
-            if r[0] == '~':
-                r = path.expanduser(r)
-            if not self.morning_r and path.exists(r+'morning_routine'):
-                self.morning_r = r+'morning_routine'
-            if not self.evening_r and path.exists(r+'evening_routine'):
-                self.evening_r = r+'evening_routine'
-
-        try:
-            self.morning_time = config.morning
-        except NameError:
-            self.morning_r = None
-        try:
-            self.evening_time = config.evening
-        except NameError:
-            self.evening_r = None
+        if 'hooks' in config:
+            if 'morning_time' in config['hooks']:
+                self.morning_time = config['hooks']['morning_time']
+            if 'evening_time' in config['hooks']:
+                self.evening_time = config['hooks']['evening_time']
 
     def _do_routine(self, r_type):
         if r_type == 0:
-            r = self.morning_r
+            r = config['hooks']['morning_scripts_static']
         else:
-            r = self.evening_r
-        with open(r, 'r') as f:
-            scripts = f.read().split('\n')
-        scripts = scripts[:-1] if not len(scripts[-1]) else scripts
-        for s in scripts:
+            r = config['hooks']['evening_scripts_static']
+        for s in r:
             run(s, shell=True)
     def do_morning(self):
         self._do_routine(0)

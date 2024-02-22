@@ -1,6 +1,6 @@
 import subprocess
 
-import config
+from config import config
 from .timeManager import TimeManager
 from .debug import debug
 
@@ -40,29 +40,35 @@ class HwBrightnessControl:
             subprocess.run(["xbacklight", "-set", str(val)])
     #set new brightness
     def set_br(self):
-        debug('set_br: self: {}'.format(self))
         if self.was_manual != MANUAL_NONE:
             return
         current = self.get_br()
-        new_br = self.time_manager.get_current_br()
+        new_br = self.time_manager.get_current_br(config['internal_monitor']['min_br'], \
+                                                  config['internal_monitor']['max_br'])
         debug('set_br: current: {}, new: {}'.format(current, new_br))
 
-        if current != new_br and abs(current-new_br) > config.user_threshold:
+        if current != new_br and abs(current-new_br) > config['internal_monitor']['update_threshold']:
             self.set_br_manual(new_br, False)
 
         #set the external too
-        if config.external:
+        if 'external_monitor' in config:
             current_external = self.get_br(external=True)
+            new_br = self.time_manager.get_current_br(config['external_monitor']['min_br'], \
+                                                      config['external_monitor']['max_br'])
             if self.current_external != new_br and \
-               abs(self.current_external-new_br) < config.user_threshold:
+               abs(self.current_external-new_br) < config['external_monitor']['update_threshold']:
                    self.set_br_manual(new_br, True)
 
     #set new brightness for the first time
     def set_first_br(self):
-        new_br = self.time_manager.get_current_br(order='first')
-        debug('set_first_br: setting: {}'.format(new_br))
+        new_br = self.time_manager.get_current_br(config['internal_monitor']['min_br'], \
+                                    config['internal_monitor']['max_br'], order='first')
+        debug('set_first_br: setting internal to: {}'.format(new_br))
         subprocess.run(["xbacklight", "-set", str(new_br)])
-        if config.external:
+        if 'external_monitor' in config:
+            new_br = self.time_manager.get_current_br(config['external_monitor']['min_br'], \
+                                    config['external_monitor']['max_br'], order='first')
+            debug('set_first_br: setting external to: {}'.format(new_br))
             subprocess.run(['ddcutil', 'setvcp', '-d', '1', '10', str(new_br)])
 
     #add or subtract from current brightness

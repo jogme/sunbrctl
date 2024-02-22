@@ -4,7 +4,7 @@ import requests
 import math
 from time import sleep
 
-import config
+from config import config
 from .hooker import Hooker
 from .debug import debug
 
@@ -33,7 +33,7 @@ class TimeManager:
         self.pimp = Hooker()
         self.get_todays_sunrise()
         try:
-            if not config.morning_on_startup:
+            if not config['hooks']['morning_on_startup']:
                 self.hook_morning_do = False
         except NameError:
             pass
@@ -56,10 +56,10 @@ class TimeManager:
         debug("update_time: new_time: " + new_time.strftime("%H:%M:%S"))
         debug("update_time: evening hook time: " + self.pimp.evening_time.strftime("%H:%M:%S"))
         debug("update_time: morning hook time: " + self.pimp.morning_time.strftime("%H:%M:%S"))
-        if self.pimp.morning_r and self.hook_morning_do and new_time > self.pimp.morning_time and new_time < self.pimp.evening_time:
+        if self.pimp.morning_time and self.hook_morning_do and new_time > self.pimp.morning_time and new_time < self.pimp.evening_time:
             self.pimp.do_morning()
             self.hook_morning_do = False
-        elif self.pimp.evening_r and self.hook_evening_do and (new_time > self.pimp.evening_time or new_time < self.pimp.morning_time):
+        elif self.pimp.evening_time and self.hook_evening_do and (new_time > self.pimp.evening_time or new_time < self.pimp.morning_time):
             self.pimp.do_evening()
             self.hook_evening_do = False
         if not order and new_time > self.astronomical_twilight_end:
@@ -72,10 +72,11 @@ class TimeManager:
         #using https://sunrise-sunset.org/api
         api_time_format = "%I:%M:%S %p"
         debug('get_todays_sunrise: getting todays sunrise data')
+        url = "https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config['position']['lat'], config['position']['lng'])
 
         try:
-            debug("get_todays_sunrise: https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
-            r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
+            debug("get_todays_sunrise: {}".format(url))
+            r = requests.get(url)
             if(r.status_code != 200):
                 return r.status_code
         except (requests.ConnectionError, requests.Timeout) as exception:
@@ -90,7 +91,7 @@ class TimeManager:
             except:
                 while True:
                     try:
-                        r = requests.get("https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config.lat, config.lng))
+                        r = requests.get(url)
                         if(r.status_code != 200):
                             return r.status_code
                         self.no_internet = False
@@ -143,7 +144,7 @@ class TimeManager:
     #the center is at 4
     def _normal_function_evening(self, x):
         base = 1/(0.35*math.sqrt(2*math.pi))
-        return int(((1/(0.35*math.sqrt(2*math.pi)))**((-(x-4)**4)/2**3))*100)
+        return int((base**((-(x-4)**4)/2**3))*100)
 
     #<a,b> is the input interval
     #<c,d> is the output interval
@@ -153,9 +154,9 @@ class TimeManager:
             raise
         return c+((d-c)/(b-a))*(x-a)
 
-    def get_current_br(self, order=None):
+    def get_current_br(self, min_br, max_br, order=None):
         self.update_time(order)
         now = self.get_seconds(self.current_time)
         x = self.convert_to_normal_function_interval(self.get_seconds(self.astronomical_twilight_begin),
                 self.get_seconds(self.astronomical_twilight_end), 0, 6, now)
-        return self._normal_function(x, config.min_br, config.max_br)
+        return self._normal_function(x, min_br, max_br)

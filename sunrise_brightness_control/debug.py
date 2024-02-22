@@ -1,5 +1,5 @@
-import config
+from config import config
 
 def debug(message):
-    if config.v:
+    if config['v']:
         print('debug: ' + message)
