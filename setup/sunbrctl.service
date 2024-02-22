@@ -1,0 +1,10 @@
+[Unit]
+Description=Brightness Control dependent on the position of the sun
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/sunbrctl.py -v
+
+[Install]
+WantedBy=default.target
