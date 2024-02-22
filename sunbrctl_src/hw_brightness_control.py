@@ -1,6 +1,6 @@
 import subprocess
 
-from config import config
+from .config import config
 from .timeManager import TimeManager
 from .debug import debug
 

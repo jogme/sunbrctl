@@ -1,4 +1,4 @@
-from config import config
+from .config import config
 
 def debug(message):
     if config['v']:

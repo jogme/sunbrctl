@@ -4,7 +4,7 @@ import requests
 import math
 from time import sleep
 
-from config import config
+from .config import config
 from .hooker import Hooker
 from .debug import debug
 

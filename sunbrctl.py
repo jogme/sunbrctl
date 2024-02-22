@@ -1,8 +1,8 @@
 #! /usr/bin/python
 
-# Main file of the app 'sunrise-brightness-control'
+# Main file of the app 'sunbrctl'
 # The application is for controlling display brightness
-# depending on current time
+# depending on current time and sunrise/sunset.
 # author: jogme
 
 import argparse
@@ -18,10 +18,10 @@ except ImportError:
 from sys import stderr
 from os import path
 
-from config import config
-from sunrise_brightness_control import dbus_con
-from sunrise_brightness_control.hw_brightness_control import HwBrightnessControl
-from sunrise_brightness_control.debug import debug
+from sunbrctl_src.config import config
+from sunbrctl_src import dbus_con
+from sunbrctl_src.hw_brightness_control import HwBrightnessControl
+from sunbrctl_src.debug import debug
 
 def updater(hw):
     while True:

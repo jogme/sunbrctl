@@ -2,7 +2,7 @@ import pydbus
 from gi.repository import GLib
 from sys import stderr
 
-BUS_NAME='org.jogme.sunrise_brightness_control'
+BUS_NAME='org.jogme.sunbrctl'
 
 # client
 def dbus_connect():
@@ -16,7 +16,7 @@ def send_set(value, external=False):
 class BusDriver(object):
     """
         <node>
-            <interface name='org.jogme.sunrise_brightness_control'>
+            <interface name='org.jogme.sunbrctl'>
                 <method name='Change'>
                     <arg type='i' name='val' direction='in'/>
                     <arg type='b' name='ext' direction='in'/>
