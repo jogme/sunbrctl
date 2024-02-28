@@ -99,16 +99,16 @@ class TimeManager:
         self.astronomical_twilight_end = datetime.strptime(res_j['astronomical_twilight_end'], api_time_format).time()
 
         if self.pimp.morning_time == 'civil':
-            self.pimp.morning_time = self.datetime.strptime(res_j['civil_twilight_begin'], api_time_format).time()
+            self.pimp.morning_time = datetime.strptime(res_j['civil_twilight_begin'], api_time_format).time()
         elif self.pimp.morning_time == 'nautical':
-            self.pimp.morning_time = self.datetime.strptime(res_j['nautical_twilight_begin'], api_time_format).time()
+            self.pimp.morning_time = datetime.strptime(res_j['nautical_twilight_begin'], api_time_format).time()
         elif self.pimp.morning_time == 'astronomical':
             self.pimp.morning_time = self.astronomical_twilight_begin
 
         if self.pimp.evening_time == 'civil':
-            self.pimp.evening_time = self.datetime.strptime(res_j['civil_twilight_end'], api_time_format).time()
+            self.pimp.evening_time = datetime.strptime(res_j['civil_twilight_end'], api_time_format).time()
         elif self.pimp.evening_time == 'nautical':
-            self.pimp.evening_time = self.datetime.strptime(res_j['nautical_twilight_end'], api_time_format).time()
+            self.pimp.evening_time = datetime.strptime(res_j['nautical_twilight_end'], api_time_format).time()
         elif self.pimp.evening_time == 'astronomical':
             self.pimp.evening_time = self.astronomical_twilight_end
 
