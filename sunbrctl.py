@@ -18,7 +18,7 @@ except ImportError:
 from sys import stderr
 from os import path
 
-from sunbrctl_src.config import config
+from sunbrctl_src.config import config, processes
 from sunbrctl_src import dbus_con
 from sunbrctl_src.hw_brightness_control import HwBrightnessControl
 from sunbrctl_src.debug import debug
@@ -48,13 +48,19 @@ def parse_arguments():
         if args.change < -100 or args.change > 100:
             print('The change value is out of bound.', file=stderr)
             exit(-1)
-        dbus_con.send_change(args.change, args.external)
+        try:
+            dbus_con.send_change(args.change, args.external)
+        except:
+            exit(-1)
         return 0
     elif args.set:
         if args.set < 0 or args.set > 100:
             print('The set value is out of bound.', file=stderr)
             exit(-1)
-        dbus_con.send_set(args.set, args.external)
+        try:
+            dbus_con.send_set(args.set, args.external)
+        except:
+            exit(-1)
         return 0
 
     config['v'] = args.v
@@ -68,12 +74,12 @@ def _check_config():
     if not 'position' in c:
         debug('check_config: no \'position\' parameter given')
         return -1
-    if not 'lat' in c['position'] or
+    if not 'lat' in c['position'] or \
        not 'lng' in c['position']:
         debug('check_config: no \'lat\' or \'lng\' parameter given in \'position\'')
         return -1
-    if not 'internal_monitor' in c and
-       not 'external_monitor' in c and
+    if not 'internal_monitor' in c and \
+       not 'external_monitor' in c and \
        not 'hooks' in c:
         debug('check_config: no internal or external monitor given or hooks.')
         return -2
@@ -82,7 +88,7 @@ def _check_config():
     if not 'utc' in c['position']:
         config['position']['utc'] = 0
         debug('check_config: no \'utc\' parameter given, setting default to 0')
-    if not 'updater' in c or
+    if not 'updater' in c or \
        not 'sleep_time_s' in c['updater']:
         # default to 5mins
         debug('check_config: no \'sleep_time_s\' parameter given, setting default to 300s')
@@ -95,7 +101,7 @@ def _check_config():
                   'setting default to false')
             h['morning_on_startup'] = False
         if not 'evening_time' in h:
-            if 'evening_scripts_static' in h or
+            if 'evening_scripts_static' in h or \
                'evening_scripts_dynamic' in h:
                 debug('check_config: no \'evening_time\' parameter given in hooks, '
                       'setting default to astronomical')
@@ -103,16 +109,16 @@ def _check_config():
             else:
                 h['evening_time'] = None
         if not 'morning_time' in h:
-            if 'morning_scripts_static' in h or
+            if 'morning_scripts_static' in h or \
                'morning_scripts_dynamic' in h:
                 debug('check_config: no \'morning_time\' parameter given in hooks, '
                       'setting default to astronomical')
                 h['morning_time'] = 'astronomical'
             else:
                 h['morning_time'] = None
-        if not 'evening_scripts_static' in h and
-           not 'evening_scripts_dynamic' in h and
-           not 'morning_scripts_static' in h and
+        if not 'evening_scripts_static' in h and \
+           not 'evening_scripts_dynamic' in h and \
+           not 'morning_scripts_static' in h and \
            not 'morning_scripts_dynamic' in h:
             debug('check_config: no scripts given in hooks, turning hooks off.')
             del c['hooks']
@@ -186,12 +192,12 @@ if __name__ == "__main__":
 
     p = Process(target=updater, args=[hw])
     p.start()
-    config.processes.append(p)
+    processes.append(p)
     
     # at app exit terminate the child processes
     try:
         # publish server and run the main loop
         dbus_con.publish_dbus(hw)
     finally:
-        for x in config.processes:
+        for x in processes:
             x.terminate()
