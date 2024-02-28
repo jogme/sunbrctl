@@ -3,6 +3,7 @@ import json
 import requests
 import math
 from time import sleep
+from os import path, makedirs
 
 from .config import config
 from .hooker import Hooker
@@ -60,6 +61,8 @@ class TimeManager:
         self.current_time = new_time
     def get_todays_sunrise(self):
         #using https://sunrise-sunset.org/api
+        data_dir_path = path.expanduser("~/.config/sunbrctl")
+        data_file_path = data_dir_path + "/latest.data"
         api_time_format = "%I:%M:%S %p"
         debug('get_todays_sunrise: getting todays sunrise data')
         url = "https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today".format(config['position']['lat'], config['position']['lng'])
@@ -75,7 +78,7 @@ class TimeManager:
         if self.no_internet:
             debug('get_todays_sunrise: no internet connection')
             try:
-                with open("latest.data", "r") as f:
+                with open(data_file_path, "r") as f:
                     res_j = json.load(f)['results']
                     debug('get_todays_sunrise: opened old sunrise data file')
             except:
@@ -90,9 +93,17 @@ class TimeManager:
                         sleep(10)
 
         else:
-            with open("latest.data", "w") as f:
-                json.dump(r.json(), f)
-                debug('get_todays_sunrise: written new sunrise data to the file')
+            try:
+                with open(data_file_path, "w") as f:
+                    json.dump(r.json(), f)
+                    debug('get_todays_sunrise: written new sunrise data to the file')
+            except FileNotFoundError:
+                makedirs(data_dir_path)
+                debug('get_todays_sunrise: Created dir {}'.format(data_dir_path))
+                with open(data_file_path, "w") as f:
+                    json.dump(r.json(), f)
+                    debug('get_todays_sunrise: written new sunrise data to the file')
+
             res_j = r.json()['results']
 
         self.astronomical_twilight_begin = datetime.strptime(res_j['astronomical_twilight_begin'], api_time_format).time()
