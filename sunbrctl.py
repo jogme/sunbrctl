@@ -40,7 +40,8 @@ def parse_arguments():
     parser.add_argument('-s', '--set', type=int, help='Set specific brightness. If used with external \
                         option, set the external monitors brightness. The value should be given as a \
                         percentage (0 - 100).')
-    parser.add_argument('--config', type=str, default=None, help='Path to config file to be used')
+    parser.add_argument('--config', type=str, default=None, help='Path to config file to be used. \
+                        Load only this config.')
     args = parser.parse_args()
 
     if args.change:
@@ -61,13 +62,100 @@ def parse_arguments():
 
     return args
 
+def _check_config():
+    c = config
+    #mandatory
+    if not 'position' in c:
+        debug('check_config: no \'position\' parameter given')
+        return -1
+    if not 'lat' in c['position'] or
+       not 'lng' in c['position']:
+        debug('check_config: no \'lat\' or \'lng\' parameter given in \'position\'')
+        return -1
+    if not 'internal_monitor' in c and
+       not 'external_monitor' in c and
+       not 'hooks' in c:
+        debug('check_config: no internal or external monitor given or hooks.')
+        return -2
+
+    #optional
+    if not 'utc' in c['position']:
+        config['position']['utc'] = 0
+        debug('check_config: no \'utc\' parameter given, setting default to 0')
+    if not 'updater' in c or
+       not 'sleep_time_s' in c['updater']:
+        # default to 5mins
+        debug('check_config: no \'sleep_time_s\' parameter given, setting default to 300s')
+        config['updater'] = {'sleep_time_s':300}
+
+    if 'hooks' in c:
+        h = c['hooks']
+        if not 'morning_on_startup' in h:
+            debug('check_config: no \'morning_on_startup\' parameter given in hooks, '
+                  'setting default to false')
+            h['morning_on_startup'] = False
+        if not 'evening_time' in h:
+            if 'evening_scripts_static' in h or
+               'evening_scripts_dynamic' in h:
+                debug('check_config: no \'evening_time\' parameter given in hooks, '
+                      'setting default to astronomical')
+                h['evening_time'] = 'astronomical'
+            else:
+                h['evening_time'] = None
+        if not 'morning_time' in h:
+            if 'morning_scripts_static' in h or
+               'morning_scripts_dynamic' in h:
+                debug('check_config: no \'morning_time\' parameter given in hooks, '
+                      'setting default to astronomical')
+                h['morning_time'] = 'astronomical'
+            else:
+                h['morning_time'] = None
+        if not 'evening_scripts_static' in h and
+           not 'evening_scripts_dynamic' in h and
+           not 'morning_scripts_static' in h and
+           not 'morning_scripts_dynamic' in h:
+            debug('check_config: no scripts given in hooks, turning hooks off.')
+            del c['hooks']
+
+    if 'internal_monitor' in c:
+        i = c['internal_monitor']
+        if not 'update_threshold' in i:
+            debug('check_config: no \'update_threshold\' parameter given in internal monitor, '
+                  'setting default to 5')
+            i['update_threshold'] = 5
+        if not 'min_br' in i:
+            debug('check_config: no \'min_br\' parameter given in internal monitor, '
+                  'setting default to 2')
+            i['min_br'] = 2
+        if not 'max_br' in i:
+            debug('check_config: no \'max_br\' parameter given in internal monitor, '
+                  'setting default to 100')
+            i['max_br'] = 100
+
+    if 'external_monitor' in c:
+        e = c['external_monitor']
+        if not 'update_threshold' in e:
+            debug('check_config: no \'update_threshold\' parameter given in external monitor, '
+                  'setting default to 5')
+            e['update_threshold'] = 5
+        if not 'min_br' in e:
+            debug('check_config: no \'min_br\' parameter given in external monitor, '
+                  'setting default to 2')
+            e['min_br'] = 2
+        if not 'max_br' in e:
+            debug('check_config: no \'max_br\' parameter given in external monitor, '
+                  'setting default to 100')
+            e['max_br'] = 100
+
+    return 0
+
 def load_config(c_file=None):
     if c_file:
         config_files = [c_file]
     else:
         # last the most important
-        config_files = ['/etc/sunrise-brightness-control/config',
-                        '~/.config/sunrise-brightness-control/config']
+        config_files = ['/etc/sunbrctl/config',
+                        '~/.config/sunbrctl/config']
 
     for x in config_files:
         x = path.expanduser(x)
@@ -77,16 +165,19 @@ def load_config(c_file=None):
         except FileNotFoundError:
             debug("Could not find config file at '{}'".format(x))
             continue
-    if not 'min_br' in config:
-        config['min_br'] = 5
-    if not 'max_br' in config:
-        config['max_br'] = 95
+    return _check_config()
 
 if __name__ == "__main__":
     args = parse_arguments()
     if args == 0:
         exit(0)
-    load_config(args.config)
+    r = load_config(args.config)
+    if r == -1:
+        print('The config is wrong. Check debug messages', file=stderr)
+        exit(-1)
+    elif r == -2:
+        print('Nothing to do. Exiting.')
+        exit(0)
 
     BaseManager.register('HwBrightnessControl', HwBrightnessControl)
     manager = BaseManager()
@@ -97,10 +188,10 @@ if __name__ == "__main__":
     p.start()
     config.processes.append(p)
     
+    # at app exit terminate the child processes
     try:
         # publish server and run the main loop
         dbus_con.publish_dbus(hw)
     finally:
-        print('this works')
         for x in config.processes:
             x.terminate()

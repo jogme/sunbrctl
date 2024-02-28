@@ -32,11 +32,8 @@ class TimeManager:
     def __init__(self):
         self.pimp = Hooker()
         self.get_todays_sunrise()
-        try:
-            if not config['hooks']['morning_on_startup']:
-                self.hook_morning_do = False
-        except NameError:
-            pass
+        if not config['hooks']['morning_on_startup']:
+            self.hook_morning_do = False
         self.update_time(True)
     def update_time(self, first=False):
         d = datetime.now()

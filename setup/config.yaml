@@ -1,6 +1,6 @@
 ---
 ## Used to determine the sunrise/sunset at the users location.
-## These options are mandatory
+## lat and lng options are mandatory, utc defaults to 0
 ## example for Paris:
 position:
   lat: 48.864716
@@ -9,9 +9,9 @@ position:
 
 ## Internal monitor is the one for a laptop.
 ## This is optional.
-## The update_threshold denotes the increment or decrement of the update
-## The min_br denotes the lowest brightness to be set
-## The max_br denotes the highest brightness to be set
+## The update_threshold denotes the increment or decrement of the update. Default=5
+## The min_br denotes the lowest brightness to be set. Default=2
+## The max_br denotes the highest brightness to be set. Default=100
 internal_monitor:
   update_threshold: 5
   min_br: 3
@@ -31,6 +31,7 @@ external_monitor:
 
 ## The sleep_time_s denotes the interval of the brightness update given in seconds.
 ## This timer is for both internal and external monitors if given
+## default value is 5 minutes (300s)
 updater:
   sleep_time_s: 600
 
@@ -45,6 +46,12 @@ updater:
 ## only when it changes from one state to the another.
 ## morning_on_startup to run the morning script on startup or not. If it is disabled no hook is
 ## executed at startup.
+## Defaults:
+## - morning_on_startup=false
+## - evening_time=astronomical
+## - morning_time=astronomical
+## if no scripts given (evening_scripts_static, evening_scripts_dynamic, morning_scripts_static, morning_scripts_dynamic
+## then the hooks are disabled.
 hooks:
   morning_on_startup: true
   evening_time: nautical

@@ -9,10 +9,8 @@ class Hooker:
 
     def __init__(self):
         if 'hooks' in config:
-            if 'morning_time' in config['hooks']:
-                self.morning_time = config['hooks']['morning_time']
-            if 'evening_time' in config['hooks']:
-                self.evening_time = config['hooks']['evening_time']
+            self.morning_time = config['hooks']['morning_time']
+            self.evening_time = config['hooks']['evening_time']
 
     def _run_scripts(self, r):
         for s in r:
@@ -21,8 +19,9 @@ class Hooker:
     def do_routine(self, which, wait=0, dynamic=True):
         if wait:
             sleep(wait)
-        r = config['hooks'][which+'_scripts_static']
-        self._run_scripts(r)
-        if dynamic:
+        if which+'_scripts_static' in config['hooks']:
+            r = config['hooks'][which+'_scripts_static']
+            self._run_scripts(r)
+        if dynamic and which+'_scripts_dynamic' in config['hooks']:
             r = config['hooks'][which+'_scripts_dynamic']
             self._run_scripts(r)
