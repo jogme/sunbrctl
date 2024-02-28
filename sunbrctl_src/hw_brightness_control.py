@@ -62,12 +62,12 @@ class HwBrightnessControl:
     #set new brightness for the first time
     def set_first_br(self):
         new_br = self.time_manager.get_current_br(config['internal_monitor']['min_br'], \
-                                    config['internal_monitor']['max_br'], order='first')
+                                    config['internal_monitor']['max_br'], first=True)
         debug('set_first_br: setting internal to: {}'.format(new_br))
         subprocess.run(["xbacklight", "-set", str(new_br)])
         if 'external_monitor' in config:
             new_br = self.time_manager.get_current_br(config['external_monitor']['min_br'], \
-                                    config['external_monitor']['max_br'], order='first')
+                                    config['external_monitor']['max_br'], first=True)
             debug('set_first_br: setting external to: {}'.format(new_br))
             subprocess.run(['ddcutil', 'setvcp', '-d', '1', '10', str(new_br)])
 

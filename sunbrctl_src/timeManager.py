@@ -37,8 +37,8 @@ class TimeManager:
                 self.hook_morning_do = False
         except NameError:
             pass
-        self.update_time('first')
-    def update_time(self, order=None):
+        self.update_time(True)
+    def update_time(self, first=False):
         d = datetime.now()
         new_time = d.time()
 
@@ -62,7 +62,7 @@ class TimeManager:
         elif self.pimp.evening_time and self.hook_evening_do and (new_time > self.pimp.evening_time or new_time < self.pimp.morning_time):
             self.pimp.do_routine('evening')
             self.hook_evening_do = False
-        if not order and new_time > self.astronomical_twilight_end:
+        if not first and new_time > self.astronomical_twilight_end:
             #86400s is a day + 60s to go past midnight
             debug('update_time: going to sleep. Good night!')
             sleep((self.get_seconds(self.astronomical_twilight_end)-86460)*-1)
@@ -154,8 +154,8 @@ class TimeManager:
             raise
         return c+((d-c)/(b-a))*(x-a)
 
-    def get_current_br(self, min_br, max_br, order=None):
-        self.update_time(order)
+    def get_current_br(self, min_br, max_br, first=False):
+        self.update_time(first)
         now = self.get_seconds(self.current_time)
         x = self.convert_to_normal_function_interval(self.get_seconds(self.astronomical_twilight_begin),
                 self.get_seconds(self.astronomical_twilight_end), 0, 6, now)
