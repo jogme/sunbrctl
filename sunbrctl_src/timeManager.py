@@ -57,10 +57,11 @@ class TimeManager:
         debug("update_time: evening hook time: " + self.pimp.evening_time.strftime("%H:%M:%S"))
         debug("update_time: morning hook time: " + self.pimp.morning_time.strftime("%H:%M:%S"))
         if self.pimp.morning_time and self.hook_morning_do and new_time > self.pimp.morning_time and new_time < self.pimp.evening_time:
-            self.pimp.do_routine('morning')
+            # do not run dynamic scripts when it's the first time
+            self.pimp.do_routine('morning', dynamic=(not first))
             self.hook_morning_do = False
         elif self.pimp.evening_time and self.hook_evening_do and (new_time > self.pimp.evening_time or new_time < self.pimp.morning_time):
-            self.pimp.do_routine('evening')
+            self.pimp.do_routine('evening', dynamic=(not first))
             self.hook_evening_do = False
         if not first and new_time > self.astronomical_twilight_end:
             #86400s is a day + 60s to go past midnight
