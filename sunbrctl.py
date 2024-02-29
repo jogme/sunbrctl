@@ -18,7 +18,7 @@ except ImportError:
 from sys import stderr
 from os import path
 
-from sunbrctl_src.config import config, processes
+from sunbrctl_src.config import config
 from sunbrctl_src import dbus_con
 from sunbrctl_src.hw_brightness_control import HwBrightnessControl
 from sunbrctl_src.debug import debug
@@ -185,6 +185,7 @@ if __name__ == "__main__":
         print('Nothing to do. Exiting.')
         exit(0)
 
+    # shared memory
     BaseManager.register('HwBrightnessControl', HwBrightnessControl)
     manager = BaseManager()
     manager.start()
@@ -194,12 +195,11 @@ if __name__ == "__main__":
     sleep(30)
     p = Process(target=updater, args=[hw])
     p.start()
-    processes.append(p)
     
     # at app exit terminate the child processes
     try:
         # publish server and run the main loop
         dbus_con.publish_dbus(hw)
     finally:
-        for x in processes:
-            x.terminate()
+        p.terminate()
+        manager.shutdown()
