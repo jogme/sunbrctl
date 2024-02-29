@@ -1,6 +1,7 @@
 from os import path
 from subprocess import run
 from .config import config
+from .debug import debug
 from time import sleep
 
 class Hooker:
@@ -23,5 +24,6 @@ class Hooker:
             r = config['hooks'][which+'_scripts_static']
             self._run_scripts(r)
         if dynamic and which+'_scripts_dynamic' in config['hooks']:
+            debug('do_routine: run dynamic scripts')
             r = config['hooks'][which+'_scripts_dynamic']
             self._run_scripts(r)
