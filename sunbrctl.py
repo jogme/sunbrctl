@@ -190,6 +190,8 @@ if __name__ == "__main__":
     manager.start()
     hw = manager.HwBrightnessControl()
 
+    # give time to boot
+    sleep(30)
     p = Process(target=updater, args=[hw])
     p.start()
     processes.append(p)
