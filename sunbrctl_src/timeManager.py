@@ -1,9 +1,10 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import json
 import requests
 import math
 from time import sleep
 from os import path, makedirs
+from multiprocessing import Process
 
 from .config import config
 from .hooker import Hooker
@@ -17,17 +18,16 @@ class TimeManager:
     astronomical_twilight_begin = None
     astronomical_twilight_end = None
 
-    hook_morning_do = True
-    hook_evening_do = True
-
     no_internet = False
+    processes = []
     
     def __init__(self):
         self.pimp = Hooker()
         self.get_todays_sunrise()
-        if not config['hooks']['morning_on_startup']:
-            self.hook_morning_do = False
         self.update_time(True)
+    def cleanup(self):
+        for p in self.processes:
+            p.terminate()
     def update_time(self, first=False):
         d = datetime.now()
         new_time = d.time()
@@ -35,10 +35,35 @@ class TimeManager:
         if d.day != self.current_day:
             #midnight
             self.get_todays_sunrise()
-            self.hook_morning_do = True
-            self.hook_evening_do = True
+            t = timedelta(hours=self.pimp.morning_time.hour - new_time.hour,
+                          minutes=self.pimp.morning_time.minute - new_time.minute,
+                          seconds=self.pimp.morning_time.second - new_time.second)
+            p = Process(target=self.pimp.do_routine, args=['morning', t.seconds])
+            p.start()
+            self.processes.append(p)
+            t = timedelta(hours=self.pimp.evening_time.hour - new_time.hour,
+                          minutes=self.pimp.evening_time.minute - new_time.minute,
+                          seconds=self.pimp.evening_time.second - new_time.second)
+            p = Process(target=self.pimp.do_routine, args=['evening', t.seconds])
+            p.start()
+            self.processes.append(p)
             self.current_day = d.day
             sleep(self.get_seconds(self.astronomical_twilight_being))
+        if first:
+            t = timedelta(hours=self.pimp.evening_time.hour - new_time.hour,
+                          minutes=self.pimp.evening_time.minute - new_time.minute,
+                          seconds=self.pimp.evening_time.second - new_time.second)
+            if t.days == -1:
+                debug('update_time: evening routine executed')
+                self.pimp.do_routine('evening', dynamic=False)
+            else:
+                if config['hooks']['morning_on_startup']:
+                    debug('update_time: morning routine executed')
+                    self.pimp.do_routine('morning', dynamic=False)
+                debug('update_time: evening process routine created')
+                p = Process(target=self.pimp.do_routine, args=['evening', t.seconds])
+                p.start()
+                self.processes.append(p)
 
         # FIXME
         # there is an issue with non-DST as then the api returns some different times
@@ -46,13 +71,6 @@ class TimeManager:
         debug("update_time: new_time: " + new_time.strftime("%H:%M:%S"))
         debug("update_time: evening hook time: " + self.pimp.evening_time.strftime("%H:%M:%S"))
         debug("update_time: morning hook time: " + self.pimp.morning_time.strftime("%H:%M:%S"))
-        if self.pimp.morning_time and self.hook_morning_do and new_time > self.pimp.morning_time and new_time < self.pimp.evening_time:
-            # do not run dynamic scripts when it's the first time
-            self.pimp.do_routine('morning', dynamic=(not first))
-            self.hook_morning_do = False
-        elif self.pimp.evening_time and self.hook_evening_do and (new_time > self.pimp.evening_time or new_time < self.pimp.morning_time):
-            self.pimp.do_routine('evening', dynamic=(not first))
-            self.hook_evening_do = False
         if not first and new_time > self.astronomical_twilight_end:
             #86400s is a day + 60s to go past midnight
             debug('update_time: going to sleep. Good night!')

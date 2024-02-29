@@ -16,6 +16,8 @@ class HwBrightnessControl:
         self.time_manager = TimeManager()
         self.set_first_br()
 
+    def cleanup(self):
+        self.time_manager.cleanup()
     #get current brightness
     def get_br(self, external=False):
         if external:

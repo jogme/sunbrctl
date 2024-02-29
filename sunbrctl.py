@@ -7,7 +7,7 @@
 
 import argparse
 from time import sleep
-from multiprocessing import Process, Manager
+from multiprocessing import Process
 from multiprocessing.managers import BaseManager
 from yaml import load
 try:
@@ -201,5 +201,6 @@ if __name__ == "__main__":
         # publish server and run the main loop
         dbus_con.publish_dbus(hw)
     finally:
+        hw.cleanup()
         p.terminate()
         manager.shutdown()
