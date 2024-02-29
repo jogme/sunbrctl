@@ -91,7 +91,6 @@ class TimeManager:
                         break
                     except (requests.ConnectionError, requests.Timeout) as exception:
                         sleep(10)
-
         else:
             try:
                 with open(data_file_path, "w") as f:
@@ -148,7 +147,8 @@ class TimeManager:
         return c+((d-c)/(b-a))*(x-a)
 
     def get_current_br(self, min_br, max_br, first=False):
-        self.update_time(first)
+        if not first:
+            self.update_time()
         now = self.get_seconds(self.current_time)
         x = self.convert_to_normal_function_interval(self.get_seconds(self.astronomical_twilight_begin),
                 self.get_seconds(self.astronomical_twilight_end), 0, 6, now)
