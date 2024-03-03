@@ -44,6 +44,9 @@ def parse_arguments():
                         Load only this config.')
     args = parser.parse_args()
 
+    config['v'] = args.v
+    config['external'] = args.external
+
     if args.change:
         if args.change < -100 or args.change > 100:
             print('The change value is out of bound.', file=stderr)
@@ -62,9 +65,6 @@ def parse_arguments():
         except:
             exit(-1)
         return 0
-
-    config['v'] = args.v
-    config['external'] = args.external
 
     return args
 
