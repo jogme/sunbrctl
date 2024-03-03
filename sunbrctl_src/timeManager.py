@@ -38,13 +38,13 @@ class TimeManager:
             t = timedelta(hours=self.pimp.morning_time.hour - new_time.hour,
                           minutes=self.pimp.morning_time.minute - new_time.minute,
                           seconds=self.pimp.morning_time.second - new_time.second)
-            p = Process(target=self.pimp.do_routine, args=['morning', t.seconds, dynamic=True])
+            p = Process(target=self.pimp.do_routine, args=['morning', t.seconds, True])
             p.start()
             self.processes.append(p)
             t = timedelta(hours=self.pimp.evening_time.hour - new_time.hour,
                           minutes=self.pimp.evening_time.minute - new_time.minute,
                           seconds=self.pimp.evening_time.second - new_time.second)
-            p = Process(target=self.pimp.do_routine, args=['evening', t.seconds, dynamic=True])
+            p = Process(target=self.pimp.do_routine, args=['evening', t.seconds, True])
             p.start()
             self.processes.append(p)
             self.current_day = d.day
@@ -61,7 +61,7 @@ class TimeManager:
                     debug('update_time: morning routine executed')
                     self.pimp.do_routine('morning', dynamic=False)
                 debug('update_time: evening process routine created')
-                p = Process(target=self.pimp.do_routine, args=['evening', t.seconds, dynamic=True])
+                p = Process(target=self.pimp.do_routine, args=['evening', t.seconds, True])
                 p.start()
                 self.processes.append(p)
 
