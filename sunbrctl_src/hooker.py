@@ -1,4 +1,4 @@
-from os import path
+from os import path, environ
 from subprocess import run
 from .config import config
 from .debug import debug
@@ -15,7 +15,7 @@ class Hooker:
 
     def _run_scripts(self, r):
         for s in r:
-            run(s, shell=True)
+            run(s, shell=True, env=environ)
 
     def do_routine(self, which, wait=0, dynamic=True):
         if wait:
